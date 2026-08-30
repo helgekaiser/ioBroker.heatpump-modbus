@@ -1,0 +1,102 @@
+{
+	"common": {
+		"name": "heatpump-modbus",
+		"version": "0.0.1",
+		"news": {
+			"0.0.1": {
+				"en": "initial release",
+				"de": "Erstveröffentlichung",
+				"ru": "Начальная версия",
+				"pt": "lançamento inicial",
+				"nl": "Eerste uitgave",
+				"fr": "Première version",
+				"it": "Versione iniziale",
+				"es": "Versión inicial",
+				"pl": "Pierwsze wydanie",
+				"uk": "Початкова версія",
+				"zh-cn": "首次出版"
+			}
+		},
+		"titleLang": {
+			"en": "Heat Pump Modbus RTU",
+			"de": "Wärmepumpe Modbus RTU",
+			"ru": "Тепловой насос Modbus RTU",
+			"pt": "Bomba de calor Modbus RTU",
+			"nl": "Warmtepomp Modbus RTU",
+			"fr": "Pompe à Chaleur Modbus RTU",
+			"it": "Pompa di calore Modbus RTU",
+			"es": "Bomba de Calor Modbus RTU",
+			"pl": "Pompa ciepła Modbus RTU",
+			"uk": "Тепловий насос Modbus RTU",
+			"zh-cn": "热泵 Modbus RTU"
+		},
+		"desc": {
+			"en": "Community adapter for compatible heat pumps using Modbus RTU",
+			"de": "Community-Adapter für kompatible Wärmepumpen mit Modbus RTU"
+		},
+		"authors": ["Helge Kaiser"],
+		"keywords": ["heatpump", "modbus", "modbus-rtu", "rs485", "heating"],
+		"licenseInformation": {
+			"type": "free",
+			"license": "MIT"
+		},
+		"platform": "Javascript/Node.js",
+		"icon": "heatpump-modbus.png",
+		"enabled": true,
+		"loglevel": "info",
+		"tier": 3,
+		"mode": "daemon",
+		"type": "climate-control",
+		"compact": true,
+		"connectionType": "local",
+		"dataSource": "poll",
+		"adminUI": {
+			"config": "json"
+		},
+		"dependencies": [
+			{
+				"js-controller": ">=6.0.11"
+			}
+		],
+		"globalDependencies": [
+			{
+				"admin": ">=7.0.23"
+			}
+		],
+		"readme": "https://github.com/helgekaiser/ioBroker.heatpump-modbus#readme",
+		"extIcon": "https://github.com/helgekaiser/ioBroker.heatpump-modbus/raw/main/admin/heatpump-modbus.png"
+	},
+	"native": {
+		"connectionType": "tcp",
+		"host": "192.168.2.225",
+		"port": 502,
+		"serialDevice": "/dev/ttyUSB0",
+		"slaveId": 1,
+		"fallbackPollingEnabled": false,
+		"fallbackPollingInterval": 60
+	},
+	"objects": [],
+	"instanceObjects": [
+		{
+			"_id": "info",
+			"type": "channel",
+			"common": {
+				"name": "Information"
+			},
+			"native": {}
+		},
+		{
+			"_id": "info.connection",
+			"type": "state",
+			"common": {
+				"role": "indicator.connected",
+				"name": "Device or service connected",
+				"type": "boolean",
+				"read": true,
+				"write": false,
+				"def": false
+			},
+			"native": {}
+		}
+	]
+}

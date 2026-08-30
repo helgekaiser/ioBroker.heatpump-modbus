@@ -1,0 +1,115 @@
+{
+	"type": "panel",
+	"items": {
+		"connectionType": {
+			"type": "select",
+			"label": "Connection type",
+			"help": "Select how the Modbus RTU connection is connected to ioBroker.",
+			"default": "tcp",
+			"options": [
+				{
+					"label": "TCP/IP gateway",
+					"value": "tcp"
+				},
+				{
+					"label": "USB / Serial (experimental)",
+					"value": "serial"
+				}
+			],
+			"newLine": true,
+			"sm": 12,
+			"md": 6,
+			"lg": 6
+		},
+		"host": {
+			"type": "text",
+			"label": "Gateway IP / hostname",
+			"help": "IP address or hostname of the transparent TCP-to-RS485 gateway.",
+			"default": "192.168.2.225",
+			"hidden": "data.connectionType !== 'tcp'",
+			"newLine": true,
+			"sm": 12,
+			"md": 6,
+			"lg": 6
+		},
+		"port": {
+			"type": "number",
+			"label": "TCP port",
+			"help": "TCP port of the transparent TCP-to-RS485 gateway.",
+			"default": 502,
+			"min": 1,
+			"max": 65535,
+			"hidden": "data.connectionType !== 'tcp'",
+			"sm": 12,
+			"md": 6,
+			"lg": 6
+		},
+		"tcpGatewayInfo": {
+			"type": "staticText",
+			"label": "Required gateway settings",
+			"text": "Transparent TCP-to-RS485 gateway required. Serial settings: 9600 baud, 8 data bits, parity None, 1 stop bit, no flow control. Use TCP Server mode and Protocol = None / transparent mode. Tested example: Waveshare Ethernet-to-RS485 gateway. For the tested Waveshare setup, RS485 Conflict Time Gap = 5 ms is used. Do not enable Modbus TCP-to-RTU conversion.",
+			"hidden": "data.connectionType !== 'tcp'",
+			"newLine": true,
+			"sm": 12,
+			"md": 12,
+			"lg": 12
+		},
+		"serialDevice": {
+			"type": "text",
+			"label": "USB / Serial device",
+			"help": "Linux serial device, for example /dev/ttyUSB0 or /dev/ttyACM0.",
+			"default": "/dev/ttyUSB0",
+			"hidden": "data.connectionType !== 'serial'",
+			"newLine": true,
+			"sm": 12,
+			"md": 6,
+			"lg": 6
+		},
+		"serialInfo": {
+			"type": "staticText",
+			"label": "USB / Serial settings",
+			"text": "Fixed settings: 9600 baud, 8 data bits, parity None, 1 stop bit, no flow control. Direct USB-to-RS485 support is implemented and currently considered experimental.",
+			"hidden": "data.connectionType !== 'serial'",
+			"newLine": true,
+			"sm": 12,
+			"md": 12,
+			"lg": 12
+		},
+		"slaveId": {
+			"type": "number",
+			"label": "Modbus slave ID",
+			"help": "Default is 1. Change only if the heat pump uses another Modbus address.",
+			"default": 1,
+			"min": 1,
+			"max": 247,
+			"newLine": true,
+			"sm": 12,
+			"md": 6,
+			"lg": 6
+		},
+		"fallbackPollingEnabled": {
+			"type": "checkbox",
+			"label": "Fallback active polling",
+			"help": "Enable only when passive Modbus data is not received reliably. Active polling is used only when passive data is missing.",
+			"default": false,
+			"newLine": true,
+			"sm": 12,
+			"md": 6,
+			"lg": 6
+		},
+		"fallbackPollingInterval": {
+			"type": "number",
+			"label": "Fallback polling interval",
+			"help": "Interval in seconds between fallback checks. Recommended: 60 seconds.",
+			"default": 60,
+			"min": 30,
+			"max": 3600,
+			"unit": "s",
+			"hidden": "!data.fallbackPollingEnabled",
+			"newLine": true,
+			"sm": 12,
+			"md": 6,
+			"lg": 6
+		}
+	}
+}
