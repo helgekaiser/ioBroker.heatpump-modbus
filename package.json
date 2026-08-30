@@ -69,7 +69,7 @@
 	"readmeFilename": "README.md",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/helgekaiser/ioBroker.heatpump-modbus.git"
+		"url": "git+https://github.com/helgekaiser/ioBroker.heatpump-modbus.git"
 	},
 	"homepage": "https://github.com/helgekaiser/ioBroker.heatpump-modbus#readme",
 	"bugs": {
