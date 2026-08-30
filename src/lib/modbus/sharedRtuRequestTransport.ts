@@ -1,3 +1,5 @@
+import { clearTimeout as nodeClearTimeout, setTimeout as nodeSetTimeout } from 'node:timers';
+
 import type { ActiveRtuTransport } from './activeRtuClient';
 import { validateModbusCrc } from './crc';
 
@@ -69,7 +71,7 @@ export class SharedRtuRequestTransport implements ActiveRtuTransport {
 		this.buffer = Buffer.alloc(0);
 
 		return new Promise<Buffer>((resolve, reject) => {
-			const timeout = setTimeout(() => {
+			const timeout = nodeSetTimeout(() => {
 				if (!this.pending) {
 					return;
 				}
@@ -90,7 +92,7 @@ export class SharedRtuRequestTransport implements ActiveRtuTransport {
 			try {
 				this.writer(request);
 			} catch (error) {
-				clearTimeout(timeout);
+				nodeClearTimeout(timeout);
 				this.pending = undefined;
 
 				reject(error instanceof Error ? error : new Error(String(error)));
@@ -125,7 +127,7 @@ export class SharedRtuRequestTransport implements ActiveRtuTransport {
 
 		const pending = this.pending;
 
-		clearTimeout(pending.timeout);
+		nodeClearTimeout(pending.timeout);
 
 		this.pending = undefined;
 		this.buffer = Buffer.alloc(0);
@@ -145,7 +147,7 @@ export class SharedRtuRequestTransport implements ActiveRtuTransport {
 
 		const pending = this.pending;
 
-		clearTimeout(pending.timeout);
+		nodeClearTimeout(pending.timeout);
 
 		this.pending = undefined;
 		this.buffer = Buffer.alloc(0);

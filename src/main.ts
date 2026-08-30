@@ -23,10 +23,10 @@ import { SharedRtuRequestTransport } from './lib/modbus/sharedRtuRequestTranspor
 class HeatpumpModbus extends utils.Adapter {
 	private socket?: net.Socket;
 	private serialPort?: SerialPort;
-	private statusTimer?: NodeJS.Timeout;
+	private statusTimer?: ioBroker.Interval;
 
 	private readonly parser = new PassiveFrameParser();
-	private readonly busScheduler = new BusScheduler();
+	private readonly busScheduler: BusScheduler;
 	private readonly writeQueue = new AsyncOperationQueue();
 
 	private activeTransport?: SharedRtuRequestTransport;
@@ -54,6 +54,14 @@ class HeatpumpModbus extends utils.Adapter {
 		super({
 			...options,
 			name: 'heatpump-modbus',
+		});
+
+		this.busScheduler = new BusScheduler(undefined, {
+			now: () => Date.now(),
+			sleep: milliseconds =>
+				new Promise(resolve => {
+					this.setTimeout(resolve, milliseconds);
+				}),
 		});
 
 		this.on('ready', this.onReady.bind(this));
@@ -106,7 +114,7 @@ class HeatpumpModbus extends utils.Adapter {
 
 		this.connect();
 
-		this.statusTimer = setInterval(() => {
+		this.statusTimer = this.setInterval(() => {
 			void this.updateStatusStates();
 			void this.runFallbackPollingCheck();
 		}, 2000);
@@ -1270,7 +1278,7 @@ class HeatpumpModbus extends utils.Adapter {
 
 				sleep: milliseconds =>
 					new Promise(resolve => {
-						setTimeout(resolve, milliseconds);
+						this.setTimeout(resolve, milliseconds);
 					}),
 
 				onInitialReadError: (attemptNumber, error) => {
@@ -1414,7 +1422,7 @@ class HeatpumpModbus extends utils.Adapter {
 
 				sleep: milliseconds =>
 					new Promise(resolve => {
-						setTimeout(resolve, milliseconds);
+						this.setTimeout(resolve, milliseconds);
 					}),
 
 				onInitialReadError: (attemptNumber, error) => {
@@ -1540,7 +1548,7 @@ class HeatpumpModbus extends utils.Adapter {
 
 				sleep: milliseconds =>
 					new Promise(resolve => {
-						setTimeout(resolve, milliseconds);
+						this.setTimeout(resolve, milliseconds);
 					}),
 
 				onInitialReadError: (attemptNumber, error) => {
@@ -1678,7 +1686,7 @@ class HeatpumpModbus extends utils.Adapter {
 
 				sleep: milliseconds =>
 					new Promise(resolve => {
-						setTimeout(resolve, milliseconds);
+						this.setTimeout(resolve, milliseconds);
 					}),
 
 				onInitialReadError: (attemptNumber, error) => {
@@ -1846,7 +1854,7 @@ class HeatpumpModbus extends utils.Adapter {
 
 				sleep: milliseconds =>
 					new Promise(resolve => {
-						setTimeout(resolve, milliseconds);
+						this.setTimeout(resolve, milliseconds);
 					}),
 
 				onInitialReadError: (attemptNumber, error) => {
@@ -1928,7 +1936,7 @@ class HeatpumpModbus extends utils.Adapter {
 	private onUnload(callback: () => void): void {
 		try {
 			if (this.statusTimer) {
-				clearInterval(this.statusTimer);
+				this.clearInterval(this.statusTimer);
 				this.statusTimer = undefined;
 			}
 

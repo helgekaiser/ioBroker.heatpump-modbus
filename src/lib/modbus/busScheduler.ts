@@ -1,3 +1,5 @@
+import { setTimeout as delay } from 'node:timers/promises';
+
 /**
  * Configuration for safe access to the shared RS485 bus.
  */
@@ -49,9 +51,7 @@ const defaultClock: BusSchedulerClock = {
 	},
 
 	sleep(milliseconds: number): Promise<void> {
-		return new Promise(resolve => {
-			setTimeout(resolve, milliseconds);
-		});
+		return delay(milliseconds);
 	},
 };
 
