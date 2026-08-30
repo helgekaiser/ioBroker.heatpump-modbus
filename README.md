@@ -70,6 +70,77 @@ The serial parameters are fixed:
 
 USB / Serial support is implemented and currently considered experimental.
 
+## Safety and liability
+
+> [!CAUTION]
+> **USE AT YOUR OWN RISK.**
+>
+> This adapter communicates with heating equipment and can modify operating
+> modes, setpoints and other device settings.
+>
+> Incorrect wiring, configuration, incompatible hardware, software errors or
+> unintended write operations may cause malfunction, loss of heating or hot
+> water, overheating, increased energy consumption, damage to the heat pump or
+> connected equipment and, in extreme cases, consequential damage including
+> fire, property damage, serious injury or death.
+>
+> No guarantee is given for compatibility, correctness, availability or safe
+> operation with any particular installation.
+>
+> The software is provided "as is", without warranty. Use is at your own risk.
+> Liability is limited to the maximum extent permitted by applicable law.
+> Nothing in this notice excludes liability where exclusion is prohibited by
+> applicable law.
+>
+> Manufacturer documentation, electrical safety regulations and all protective
+> functions of the heat pump always take precedence over this documentation.
+> Electrical work and modifications to heating equipment must only be carried
+> out by suitably qualified persons.
+
+## RS485 connection
+
+> [!WARNING]
+> **Do not connect the adapter to the RS485 connection used by the display or
+> remote controller.**
+>
+> The connection described below is the internal RS485 bus observed on the
+> tested SWD WP6 R290 built in 2026.
+>
+> Wiring, connector type and signal assignment may differ on other production
+> years, controller revisions or related heat-pump models. Always verify the
+> wiring of the specific unit before making a connection.
+
+### Main controller connection
+
+On the tested SWD WP6 R290 built in 2026, the internal RS485 connection is
+available at the main controller connector shown below.
+
+![Internal RS485 connection on the main controller](docs/images/rs485-mainboard.jpg)
+
+The tested wiring uses:
+
+- **Yellow and green:** the two RS485 data lines A and B
+- **Black:** GND
+- **GND is optional** for the tested setup and was not connected during
+  successful operation
+
+The exact assignment of **yellow/green to A/B is intentionally not specified
+here**. Verify the A/B assignment on the particular unit before connecting the
+adapter.
+
+Do not rely solely on wire colours, because wiring may differ between
+production revisions.
+
+### Internal cable splice / service connector
+
+On the tested unit there is also an internal splice in the cable harness leading
+to the connector shown below. The RS485 data lines can be accessed there.
+
+![Internal RS485 splice / service connector](docs/images/rs485-splice.jpg)
+
+This connection arrangement was observed on an **SWD WP6 R290 built in 2026**.
+It may not exist, or may be wired differently, on other production versions.
+
 ## Bus safety
 
 The heat-pump controller already communicates on the RS485 bus.
