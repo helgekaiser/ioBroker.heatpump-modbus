@@ -220,49 +220,111 @@ Verified ranges:
 | `cooling.setpoint`  |  7–30 °C |
 | `hotWater.setpoint` | 28–60 °C |
 
-## Measurements
+## ioBroker states
 
-The adapter exposes available values including:
+`R` means read-only.  
+`RW` means read and write.
 
-- outside temperature
-- outlet water temperature
-- inlet water temperature
-- tank temperature
-- evaporator temperature
-- suction and discharge gas temperatures
-- compressor frequency
-- compressor current
-- fan speeds
-- pump speed
-- water flow
-- pressure
-- mains voltage
-- total current
-- electrical power
+> [!WARNING]
+> Writable states directly influence the heat pump.
+> Only use `RW` states when the connected model and register mapping have been
+> verified. Incorrect values or commands can cause malfunction or damage.
 
-## Faults
+### Control and setpoints
 
-Useful fault information is exposed through:
+| State                    | Access | Description                   | Values / range                                                         |
+| ------------------------ | :----: | ----------------------------- | ---------------------------------------------------------------------- |
+| `device.power`           |   RW   | Controller power state        | `on`, `off`                                                            |
+| `operatingMode.setpoint` |   RW   | Operating mode                | `hotWater`, `heating`, `cooling`, `hotWaterHeating`, `hotWaterCooling` |
+| `frequencyMode.setpoint` |   RW   | Compressor operating strategy | `smart`, `silent`, `powerful`                                          |
+| `vacation.enabled`       |   RW   | Vacation mode                 | `true`, `false`                                                        |
+| `vacation.setpoint`      |   R    | Vacation temperature setpoint | °C; currently read-only                                                |
+| `heating.setpoint`       |   RW   | Heating setpoint              | 15–50 °C                                                               |
+| `cooling.setpoint`       |   RW   | Cooling setpoint              | 7–30 °C                                                                |
+| `hotWater.setpoint`      |   RW   | Domestic hot-water setpoint   | 28–60 °C                                                               |
 
-- `fault.active`
-- `fault.codes`
-- `fault.messages`
+### Temperatures
 
-Low-level values used mainly for troubleshooting are located below:
+| State                               | Access | Description                              | Unit |
+| ----------------------------------- | :----: | ---------------------------------------- | ---- |
+| `temperature.inlet`                 |   R    | Inlet water temperature / return         | °C   |
+| `temperature.outlet`                |   R    | Outlet water temperature / flow          | °C   |
+| `temperature.tank`                  |   R    | Tank temperature                         | °C   |
+| `temperature.outside`               |   R    | Outside temperature                      | °C   |
+| `temperature.suctionGas`            |   R    | Suction gas temperature                  | °C   |
+| `temperature.evaporator`            |   R    | Evaporator / external coil temperature   | °C   |
+| `temperature.innerCoil`             |   R    | Inner coil temperature                   | °C   |
+| `temperature.exhaustGas`            |   R    | Discharge / exhaust gas temperature      | °C   |
+| `temperature.heatSink`              |   R    | Inverter heat-sink temperature           | °C   |
+| `temperature.lowPressureConversion` |   R    | Temperature calculated from low pressure | °C   |
 
-`diagnostics.*`
+### Compressor, fan and pump
 
-## Verified writable functions
+| State                        | Access | Description                                        | Unit |
+| ---------------------------- | :----: | -------------------------------------------------- | ---- |
+| `compressor.frequency`       |   R    | Actual compressor frequency                        | Hz   |
+| `compressor.targetFrequency` |   R    | Compressor target frequency reported by controller | Hz   |
+| `compressor.current`         |   R    | Compressor current                                 | A    |
+| `fan.speed1`                 |   R    | Fan 1 speed                                        | rpm  |
+| `fan.speed2`                 |   R    | Fan 2 speed                                        | rpm  |
+| `pump.speed`                 |   R    | Actual water-pump speed                            | %    |
+| `pump.targetSpeed`           |   R    | Water-pump target speed reported by controller     | %    |
 
-The following functions were tested on the real SWD WP6 R290 used during development:
+`pump.targetSpeed` is not the actual pump speed. For example, the controller may
+report a target of 100 % while `pump.speed` shows the actual pump running at a
+much lower speed.
 
-- controller power
-- operating mode
-- Smart / Silent / Powerful frequency mode
-- vacation mode
-- heating setpoint
-- cooling setpoint
-- hot-water setpoint
+### Hydraulic, pressure and electrical values
+
+| State                      | Access | Description                              | Unit |
+| -------------------------- | :----: | ---------------------------------------- | ---- |
+| `water.flow`               |   R    | Water flow                               | m³/h |
+| `pressure.low`             |   R    | Refrigerant low pressure                 | bar  |
+| `expansionValve.main`      |   R    | Main electronic expansion-valve position | P    |
+| `expansionValve.auxiliary` |   R    | Auxiliary expansion-valve position       | P    |
+| `electrical.dcBusVoltage`  |   R    | DC bus voltage                           | V    |
+| `electrical.voltage`       |   R    | Mains voltage                            | V    |
+| `electrical.current`       |   R    | Total machine current                    | A    |
+| `electrical.power`         |   R    | Total electrical power                   | W    |
+
+### Output states
+
+These states report whether the controller is requesting or switching an output.
+They do not independently prove that the connected component is electrically
+energized or operating correctly.
+
+| State                       | Access | Description                                     |
+| --------------------------- | :----: | ----------------------------------------------- |
+| `output.compressor`         |   R    | Compressor output                               |
+| `output.fanMotor`           |   R    | Fan motor output                                |
+| `output.fourWayValve`       |   R    | Refrigerant four-way valve output               |
+| `output.chassisHeater`      |   R    | Chassis / base heater output                    |
+| `output.acElectricHeater`   |   R    | Additional space-heating electric heater output |
+| `output.threeWayValve`      |   R    | Hydraulic three-way valve output                |
+| `output.tankElectricHeater` |   R    | Domestic hot-water tank electric heater output  |
+| `output.circulationPump`    |   R    | External circulation-pump output                |
+| `output.crankcaseHeater`    |   R    | Compressor crankcase-heater output              |
+
+### Status, faults and diagnostics
+
+| State                           | Access | Description                               |
+| ------------------------------- | :----: | ----------------------------------------- |
+| `status.defrosting`             |   R    | Defrost cycle active                      |
+| `fault.active`                  |   R    | At least one detected fault is active     |
+| `fault.codes`                   |   R    | Detected fault codes                      |
+| `fault.messages`                |   R    | Human-readable fault information          |
+| `diagnostics.rawWorkingStatus`  |   R    | Raw controller working-status word        |
+| `diagnostics.rawOutputFlags1`   |   R    | Raw output-flags word 1                   |
+| `diagnostics.rawOutputFlags2`   |   R    | Raw output-flags word 2                   |
+| `diagnostics.rawOutputFlags3`   |   R    | Raw output-flags word 3                   |
+| `diagnostics.rawFaultFlags`     |   R    | Raw fault flags                           |
+| `diagnostics.forceFallbackPoll` |   W    | Trigger one manual fallback polling cycle |
+
+### Adapter status
+
+| State             | Access | Description                        |
+| ----------------- | :----: | ---------------------------------- |
+| `info.connection` |   R    | Adapter transport connection state |
 
 ## Compatibility reports
 
