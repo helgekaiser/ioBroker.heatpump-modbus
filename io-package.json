@@ -32,7 +32,16 @@
 		},
 		"desc": {
 			"en": "Community adapter for compatible heat pumps using Modbus RTU",
-			"de": "Community-Adapter für kompatible Wärmepumpen mit Modbus RTU"
+			"de": "Community-Adapter für kompatible Wärmepumpen mit Modbus RTU",
+			"ru": "Адаптер сообщества для совместимых тепловых насосов с Modbus RTU",
+			"pt": "Adaptador comunitário para bombas de calor compatíveis com Modbus RTU",
+			"nl": "Community-adapter voor compatibele warmtepompen met Modbus RTU",
+			"fr": "Adaptateur communautaire pour pompes à chaleur compatibles avec Modbus RTU",
+			"it": "Adattatore della community per pompe di calore compatibili con Modbus RTU",
+			"es": "Adaptador comunitario para bombas de calor compatibles con Modbus RTU",
+			"pl": "Adapter społecznościowy do kompatybilnych pomp ciepła z Modbus RTU",
+			"uk": "Адаптер спільноти для сумісних теплових насосів із Modbus RTU",
+			"zh-cn": "用于兼容 Modbus RTU 热泵的社区适配器"
 		},
 		"authors": ["Helge Kaiser"],
 		"keywords": ["heatpump", "modbus", "modbus-rtu", "rs485", "heating"],
@@ -60,11 +69,12 @@
 		],
 		"globalDependencies": [
 			{
-				"admin": ">=7.0.23"
+				"admin": ">=7.6.20"
 			}
 		],
 		"readme": "https://github.com/helgekaiser/ioBroker.heatpump-modbus#readme",
-		"extIcon": "https://github.com/helgekaiser/ioBroker.heatpump-modbus/raw/main/admin/heatpump-modbus.png"
+		"extIcon": "https://github.com/helgekaiser/ioBroker.heatpump-modbus/raw/main/admin/heatpump-modbus.png",
+		"nogit": true
 	},
 	"native": {
 		"connectionType": "tcp",

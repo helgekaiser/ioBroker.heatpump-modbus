@@ -225,8 +225,8 @@ Verified ranges:
 The adapter exposes available values including:
 
 - outside temperature
-- flow temperature
-- return temperature
+- outlet water temperature
+- inlet water temperature
 - tank temperature
 - evaporator temperature
 - suction and discharge gas temperatures
@@ -276,16 +276,19 @@ If another heat pump uses the same controller or Modbus register layout, please 
 
 This will allow additional device profiles and confirmed compatibility information to be added later.
 
-## Disclaimer
+## Changelog
 
-Use of this software and writable Modbus functions is at your own risk.
+### 0.0.1
 
-Incorrect values or commands may affect heating, cooling, hot-water production or other heat-pump functions.
-
-Always verify compatibility before enabling writable functions on an untested model.
+- Initial public development version
+- Modbus RTU monitoring via transparent TCP-to-RS485 gateway
+- Experimental direct USB-to-RS485 support
+- Passive bus monitoring with conservative active fallback polling
+- Verified monitoring and writable functions for the tested SWD WP6 R290
+- RS485 connection and safety documentation
 
 ## License
 
 MIT License
 
-Copyright © 2026 Helge Kaiser
+Copyright (c) 2026 Helge Kaiser
