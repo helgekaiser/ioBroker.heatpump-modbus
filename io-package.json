@@ -1,8 +1,21 @@
 {
 	"common": {
 		"name": "heatpump-modbus",
-		"version": "0.0.1",
+		"version": "0.0.2",
 		"news": {
+			"0.0.2": {
+				"en": "Passive Modbus monitoring, simplified write handling, pump controls and fault states",
+				"de": "Passives Modbus-Monitoring, vereinfachte Schreiblogik, Pumpensteuerung und Fehlerzustände",
+				"ru": "Пассивный мониторинг Modbus, упрощенная запись, управление насосом и состояния ошибок",
+				"pt": "Monitorização Modbus passiva, escrita simplificada, controlo da bomba e estados de erro",
+				"nl": "Passieve Modbus-bewaking, vereenvoudigd schrijven, pompbediening en foutstatussen",
+				"fr": "Surveillance Modbus passive, écriture simplifiée, commande de pompe et états de défaut",
+				"it": "Monitoraggio Modbus passivo, scrittura semplificata, controllo pompa e stati di errore",
+				"es": "Monitorización Modbus pasiva, escritura simplificada, control de bomba y estados de fallo",
+				"pl": "Pasywne monitorowanie Modbus, uproszczony zapis, sterowanie pompą i stany błędów",
+				"uk": "Пасивний моніторинг Modbus, спрощений запис, керування насосом і стани помилок",
+				"zh-cn": "被动 Modbus 监控、简化写入、循环泵控制和故障状态"
+			},
 			"0.0.1": {
 				"en": "initial release",
 				"de": "Erstveröffentlichung",
@@ -58,7 +71,7 @@
 		"type": "climate-control",
 		"compact": true,
 		"connectionType": "local",
-		"dataSource": "poll",
+		"dataSource": "push",
 		"adminUI": {
 			"config": "json"
 		},
@@ -81,9 +94,7 @@
 		"host": "192.168.2.225",
 		"port": 502,
 		"serialDevice": "/dev/ttyUSB0",
-		"slaveId": 1,
-		"fallbackPollingEnabled": false,
-		"fallbackPollingInterval": 60
+		"slaveId": 1
 	},
 	"objects": [],
 	"instanceObjects": [

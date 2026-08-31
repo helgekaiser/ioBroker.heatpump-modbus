@@ -11,9 +11,6 @@ declare global {
 			serialDevice: string;
 
 			slaveId: number;
-
-			fallbackPollingEnabled: boolean;
-			fallbackPollingInterval: number;
 		}
 	}
 }

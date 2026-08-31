@@ -1,6 +1,6 @@
 {
 	"name": "iobroker.heatpump-modbus",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Community adapter for compatible heat pumps using Modbus RTU",
 	"author": {
 		"name": "Helge Kaiser"
@@ -44,6 +44,7 @@
 	"main": "build/main.js",
 	"files": [
 		"admin",
+		"docs",
 		"build",
 		"io-package.json",
 		"README.md",

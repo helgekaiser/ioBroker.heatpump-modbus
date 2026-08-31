@@ -12,9 +12,16 @@ The adapter was developed and tested on real hardware with:
 - Modbus RTU
 - transparent TCP-to-RS485 gateway
 
-The current device profile is based on the protocol and register behaviour verified on this system.
+The register mapping and write behaviour are based on the available Modbus documentation and verified against the real bus traffic of the tested system.
 
-Heat pumps from other manufacturers using the same or a closely related controller and Modbus protocol may also work. Compatibility with those devices is not guaranteed until it has been verified on real hardware.
+The current profile maps **56 Modbus register addresses**:
+
+- 39 read-only register addresses
+- 17 read/write register addresses
+
+Several registers contain multiple flags or logical states, so the number of ioBroker states is higher than the number of physical Modbus registers.
+
+Heat pumps using the same or a closely related controller and Modbus protocol may also work. Compatibility with other devices is not guaranteed until verified on real hardware.
 
 Reports about additional compatible models and firmware versions are welcome.
 
@@ -26,6 +33,22 @@ It is not an official product of SWD, Power World, or any other heat-pump manufa
 
 Manufacturer and product names are mentioned only to describe tested or potentially compatible hardware.
 
+## Operating principle
+
+The adapter is designed primarily as a **passive Modbus RTU listener**.
+
+The heat-pump controller already continuously exchanges Modbus data on its internal RS485 bus. The adapter uses these existing telegrams instead of generating periodic read requests itself.
+
+Therefore:
+
+- no active polling is performed by the adapter
+- no fallback polling is used
+- valid passive register values are processed immediately
+- ioBroker states are only updated when their decoded value changes
+- `info.connection` is based on receiving valid Modbus traffic
+
+This minimizes additional traffic on the existing controller bus.
+
 ## Connection
 
 The adapter supports two Modbus RTU connection methods.
@@ -34,7 +57,7 @@ The adapter supports two Modbus RTU connection methods.
 
 This is the currently verified connection method.
 
-The gateway must operate as a transparent TCP-to-RS485 serial server.
+The gateway must operate as a **transparent TCP-to-RS485 serial server**.
 
 Required settings:
 
@@ -46,19 +69,23 @@ Required settings:
 - flow control: none
 - protocol: none / transparent
 
-The adapter sends complete Modbus RTU frames including CRC.
-Do not enable Modbus TCP-to-RTU protocol conversion.
+The adapter sends and receives complete Modbus RTU frames including CRC.
 
-A Waveshare Ethernet-to-RS485 gateway has been used successfully during
-development and is therefore a tested example. Equivalent transparent
-TCP-to-RS485 gateways should also work.
+Do **not** enable Modbus TCP-to-RTU protocol conversion.
 
-For the tested Waveshare setup, an RS485 Conflict Time Gap of 5 ms is used.
+A Waveshare Ethernet-to-RS485 gateway has been used successfully during development and is therefore a tested example. Equivalent transparent TCP-to-RS485 gateways should also work.
+
+For the tested Waveshare setup, an **RS485 Conflict Time Gap of 5 ms** is used.
 
 ### USB / Serial
 
-Direct USB-to-RS485 adapters are supported through a Linux serial device,
-for example `/dev/ttyUSB0` or `/dev/ttyACM0`.
+Direct USB-to-RS485 adapters are supported through a Linux serial device, for example:
+
+`/dev/ttyUSB0`
+
+or
+
+`/dev/ttyACM0`
 
 The serial parameters are fixed:
 
@@ -68,7 +95,7 @@ The serial parameters are fixed:
 - 1 stop bit
 - no flow control
 
-USB / Serial support is implemented and currently considered experimental.
+USB / Serial support is implemented but has not been tested as extensively as the transparent TCP connection.
 
 ## Safety and liability
 
@@ -76,7 +103,7 @@ USB / Serial support is implemented and currently considered experimental.
 > **USE AT YOUR OWN RISK.**
 >
 > This adapter communicates with heating equipment and can modify operating
-> modes, setpoints and other device settings.
+> modes, temperatures, pump parameters and other device settings.
 >
 > Incorrect wiring, configuration, incompatible hardware, software errors or
 > unintended write operations may cause malfunction, loss of heating or hot
@@ -89,8 +116,6 @@ USB / Serial support is implemented and currently considered experimental.
 >
 > The software is provided "as is", without warranty. Use is at your own risk.
 > Liability is limited to the maximum extent permitted by applicable law.
-> Nothing in this notice excludes liability where exclusion is prohibited by
-> applicable law.
 >
 > Manufacturer documentation, electrical safety regulations and all protective
 > functions of the heat pump always take precedence over this documentation.
@@ -100,165 +125,202 @@ USB / Serial support is implemented and currently considered experimental.
 ## RS485 connection
 
 > [!WARNING]
-> **Do not connect the adapter to the RS485 connection used by the display or
-> remote controller.**
+> **Do not assume that every RS485 connector in the heat pump carries the same bus.**
 >
 > The connection described below is the internal RS485 bus observed on the
 > tested SWD WP6 R290 built in 2026.
 >
 > Wiring, connector type and signal assignment may differ on other production
-> years, controller revisions or related heat-pump models. Always verify the
-> wiring of the specific unit before making a connection.
+> years, controller revisions or related heat-pump models.
 
 ### Main controller connection
 
-On the tested SWD WP6 R290 built in 2026, the internal RS485 connection is
-available at the main controller connector shown below.
+On the tested SWD WP6 R290 built in 2026, the internal RS485 connection is available at the main controller connector shown below.
 
 ![Internal RS485 connection on the main controller](docs/images/rs485-mainboard.jpg)
 
 The tested wiring uses:
 
-- **Yellow and green:** the two RS485 data lines A and B
+- **Yellow and green:** the two RS485 data lines
 - **Black:** GND
-- **GND is optional** for the tested setup and was not connected during
-  successful operation
+- GND was not required for successful operation in the tested installation
 
-The exact assignment of **yellow/green to A/B is intentionally not specified
-here**. Verify the A/B assignment on the particular unit before connecting the
-adapter.
+The exact assignment of yellow/green to A/B is intentionally not specified here.
 
-Do not rely solely on wire colours, because wiring may differ between
-production revisions.
+Verify the A/B assignment on the particular unit before connecting the adapter.
+
+Do not rely solely on wire colours because wiring may differ between production revisions.
 
 ### Internal cable splice / service connector
 
-On the tested unit there is also an internal splice in the cable harness leading
-to the connector shown below. The RS485 data lines can be accessed there.
+On the tested unit there is also an internal splice in the cable harness leading to the connector shown below. The RS485 data lines can be accessed there.
 
 ![Internal RS485 splice / service connector](docs/images/rs485-splice.jpg)
 
-This connection arrangement was observed on an **SWD WP6 R290 built in 2026**.
+This arrangement was observed on an **SWD WP6 R290 built in 2026**.
+
 It may not exist, or may be wired differently, on other production versions.
 
-## Bus safety
+## Bus and write safety
 
-The heat-pump controller already communicates on the RS485 bus.
+Passive monitoring itself does not transmit anything to the Modbus bus.
 
-The adapter therefore uses conservative access:
+A transmission is only generated when an ioBroker state marked as writable is changed with `ack=false`.
 
-- passive monitoring whenever possible
-- active polling only as fallback
-- bus-idle detection
-- minimum spacing between active requests
-- serialized Modbus requests
-- serialized complete write operations
-- read-before-write
-- readback verification
-- maximum of three write attempts
-- no automatic repetition after a positively acknowledged write
+Writes are deliberately conservative:
 
-## Main states
+- only one Modbus write is active at a time
+- queued changes for the same state keep only the newest requested value
+- if the last passively observed device value already equals the requested value, no write is sent
+- the adapter waits for at least **200 ms of bus inactivity** before transmitting
+- writable registers are sent using Modbus function code **06**
+- after a write, confirmation is obtained from the following passive device traffic
+- up to the next **two passive observations** of the affected register are accepted as confirmation
+- if the device has not accepted the value, the write may be retried
+- a maximum of **three actual write attempts** is made
+- `ack=true` is only set after the requested value has been observed passively from the device
+- after final failure, the last passively observed real device value is restored in ioBroker
 
-### Power
+For registers containing several bit flags, unrelated bits are preserved using the latest passively observed raw register value.
 
-`device.power`
+## Main control states
 
-Values:
+`R` means read-only.
 
-- `on`
-- `off`
-- `unknown`
-
-### Operating mode
-
-`operatingMode.setpoint`
-
-Values:
-
-- `hotWater`
-- `heating`
-- `cooling`
-- `hotWaterHeating`
-- `hotWaterCooling`
-
-### Frequency mode
-
-`frequencyMode.setpoint`
-
-Values:
-
-- `smart`
-- `silent`
-- `powerful`
-
-### Vacation
-
-`vacation.enabled`
-
-Enables or disables vacation mode.
-
-`vacation.setpoint`
-
-Current vacation temperature setpoint.
-
-The vacation setpoint is currently read-only because its safe writable range has not yet been verified.
-
-### Temperature setpoints
-
-Writable:
-
-- `heating.setpoint`
-- `cooling.setpoint`
-- `hotWater.setpoint`
-
-Verified ranges:
-
-| State               |    Range |
-| ------------------- | -------: |
-| `heating.setpoint`  | 15–50 °C |
-| `cooling.setpoint`  |  7–30 °C |
-| `hotWater.setpoint` | 28–60 °C |
-
-## ioBroker states
-
-`R` means read-only.  
 `RW` means read and write.
 
 > [!WARNING]
 > Writable states directly influence the heat pump.
-> Only use `RW` states when the connected model and register mapping have been
-> verified. Incorrect values or commands can cause malfunction or damage.
+> Only use them when the connected model and register mapping have been verified.
 
-### Control and setpoints
+| Address  | State                    | Access | Description                   | Values / range                                                         |
+| -------- | ------------------------ | :----: | ----------------------------- | ---------------------------------------------------------------------- |
+| `0x003F` | `device.power`           |   RW   | Heat-pump controller power    | `true`, `false`                                                        |
+| `0x0040` | `frequencyMode.setpoint` |   RW   | Compressor operating strategy | `smart`, `silent`, `powerful`                                          |
+| `0x0041` | `vacation.enabled`       |   RW   | Vacation mode                 | `true`, `false`                                                        |
+| `0x0043` | `operatingMode.setpoint` |   RW   | Operating mode                | `hotWater`, `heating`, `cooling`, `hotWaterHeating`, `hotWaterCooling` |
+| `0x00BE` | `hotWater.setpoint`      |   RW   | Domestic hot-water setpoint   | 28–60 °C                                                               |
+| `0x00BF` | `cooling.setpoint`       |   RW   | Cooling setpoint              | 7–30 °C                                                                |
+| `0x00C0` | `heating.setpoint`       |   RW   | Heating setpoint              | 15–50 °C                                                               |
+| `0x00D0` | `vacation.setpoint`      |   RW   | Vacation temperature setpoint | 15–50 °C                                                               |
 
-| State                    | Access | Description                   | Values / range                                                         |
-| ------------------------ | :----: | ----------------------------- | ---------------------------------------------------------------------- |
-| `device.power`           |   RW   | Controller power state        | `on`, `off`                                                            |
-| `operatingMode.setpoint` |   RW   | Operating mode                | `hotWater`, `heating`, `cooling`, `hotWaterHeating`, `hotWaterCooling` |
-| `frequencyMode.setpoint` |   RW   | Compressor operating strategy | `smart`, `silent`, `powerful`                                          |
-| `vacation.enabled`       |   RW   | Vacation mode                 | `true`, `false`                                                        |
-| `vacation.setpoint`      |   R    | Vacation temperature setpoint | °C; currently read-only                                                |
-| `heating.setpoint`       |   RW   | Heating setpoint              | 15–50 °C                                                               |
-| `cooling.setpoint`       |   RW   | Cooling setpoint              | 7–30 °C                                                                |
-| `hotWater.setpoint`      |   RW   | Domestic hot-water setpoint   | 28–60 °C                                                               |
+## Water-pump controls
 
-### Temperatures
+The following controller parameters are exposed as writable states.
+
+| Address  | State                           | Access | Description                     | Values / range                       |
+| -------- | ------------------------------- | :----: | ------------------------------- | ------------------------------------ |
+| `0x015B` | `pump.constantTemperatureMode`  |   RW   | Constant-temperature pump mode  | `intermittent`, `continuous`, `stop` |
+| `0x015C` | `pump.constantTemperatureCycle` |   RW   | Constant-temperature pump cycle | 1–120 min                            |
+| `0x015F` | `pump.mode`                     |   RW   | DC water-pump mode              | `disabled`, `automatic`, `manual`    |
+| `0x0160` | `pump.adjustmentCycle`          |   RW   | Pump adjustment cycle           | 10–100 s                             |
+| `0x0161` | `pump.manualSpeed`              |   RW   | Manual pump speed               | 10–100 %                             |
+| `0x0162` | `pump.maxSpeed`                 |   RW   | Maximum pump speed              | %, controller-specific range         |
+| `0x0163` | `pump.minSpeed`                 |   RW   | Minimum pump speed              | 10–100 %                             |
+| `0x0164` | `pump.adjustmentStep`           |   RW   | Pump adjustment speed           | controller-specific range            |
+| `0x0165` | `pump.pwmFrequencyType`         |   RW   | PWM input frequency type        | controller-specific value            |
+
+For `pump.maxSpeed`, `pump.adjustmentStep` and `pump.pwmFrequencyType`, the available Modbus documentation identifies the registers as writable but does not provide a reliable value range or enum definition.
+
+The adapter therefore does not invent undocumented limits or enum meanings for those values.
+
+## Constant-temperature pump operation (F02 / F03)
+
+The heat-pump controller provides two parameters that define how the water
+pump behaves after the requested constant temperature has been reached.
+
+These parameters are separate from `pump.mode` (F04).
+
+### F02 - Water pump constant-temperature operation mode
+
+State:
+
+`pump.constantTemperatureMode`
+
+Register:
+
+`0x015B`
+
+The available modes are:
+
+| Raw value | State value    | Behaviour                                                                     |
+| :-------: | -------------- | ----------------------------------------------------------------------------- |
+|    `0`    | `intermittent` | Pump operates intermittently after the requested temperature has been reached |
+|    `1`    | `continuous`   | Pump continues running after the requested temperature has been reached       |
+|    `2`    | `stop`         | Pump stops after the requested temperature has been reached                   |
+
+In other words:
+
+- **Intermittent**: the pump is periodically restarted after reaching the target temperature.
+- **Continuous**: the pump continues to run even after the target temperature has been reached.
+- **Stop**: the pump stops when the target temperature has been reached.
+
+### F03 - Water pump constant-temperature cycle
+
+State:
+
+`pump.constantTemperatureCycle`
+
+Register:
+
+`0x015C`
+
+Range:
+
+`1–120 min`
+
+F03 is relevant when F02 is set to `intermittent`.
+
+According to the manufacturer description, for example:
+
+`F03 = 15`
+
+means:
+
+- pump OFF for 15 minutes
+- pump ON for 3 minutes
+- the cycle is then repeated as required by the controller
+
+### Observed values on the tested SWD WP6 R290
+
+The following values have been observed passively on the real Modbus bus:
+
+- `0x015B = 1` -> `continuous`
+- `0x015C = 15` -> 15-minute intermittent cycle setting
+
+The value of F03 remains stored even when F02 is currently set to
+`continuous`. It only becomes relevant for pump operation when F02 is changed
+to `intermittent`.
+
+> [!IMPORTANT]
+> F02 and F03 must not be confused with `pump.mode`.
+>
+> `pump.mode` is F04 / register `0x015F` and controls the basic DC water-pump
+> mode:
+>
+> - `disabled`
+> - `automatic`
+> - `manual`
+>
+> F02/F03 instead define what the pump should do when the requested constant
+> temperature has been reached.
+
+## Temperature states
 
 | State                               | Access | Description                              | Unit |
 | ----------------------------------- | :----: | ---------------------------------------- | ---- |
 | `temperature.inlet`                 |   R    | Inlet water temperature / return         | °C   |
 | `temperature.outlet`                |   R    | Outlet water temperature / flow          | °C   |
-| `temperature.tank`                  |   R    | Tank temperature                         | °C   |
+| `temperature.tank`                  |   R    | Water-tank temperature                   | °C   |
 | `temperature.outside`               |   R    | Outside temperature                      | °C   |
-| `temperature.suctionGas`            |   R    | Suction gas temperature                  | °C   |
-| `temperature.evaporator`            |   R    | Evaporator / external coil temperature   | °C   |
-| `temperature.innerCoil`             |   R    | Inner coil temperature                   | °C   |
-| `temperature.exhaustGas`            |   R    | Discharge / exhaust gas temperature      | °C   |
+| `temperature.suctionGas`            |   R    | Suction-gas temperature                  | °C   |
+| `temperature.evaporator`            |   R    | External-coil / evaporator temperature   | °C   |
+| `temperature.innerCoil`             |   R    | Inner-coil temperature                   | °C   |
+| `temperature.exhaustGas`            |   R    | Discharge / exhaust-gas temperature      | °C   |
 | `temperature.heatSink`              |   R    | Inverter heat-sink temperature           | °C   |
 | `temperature.lowPressureConversion` |   R    | Temperature calculated from low pressure | °C   |
 
-### Compressor, fan and pump
+## Compressor, fan and pump monitoring
 
 | State                        | Access | Description                                        | Unit |
 | ---------------------------- | :----: | -------------------------------------------------- | ---- |
@@ -270,11 +332,11 @@ Verified ranges:
 | `pump.speed`                 |   R    | Actual water-pump speed                            | %    |
 | `pump.targetSpeed`           |   R    | Water-pump target speed reported by controller     | %    |
 
-`pump.targetSpeed` is not the actual pump speed. For example, the controller may
-report a target of 100 % while `pump.speed` shows the actual pump running at a
-much lower speed.
+`pump.targetSpeed` is not necessarily the actual physical pump speed.
 
-### Hydraulic, pressure and electrical values
+For example, the controller may report a target of 100 % while `pump.speed` reports a considerably lower actual speed.
+
+## Hydraulic, pressure and electrical values
 
 | State                      | Access | Description                              | Unit |
 | -------------------------- | :----: | ---------------------------------------- | ---- |
@@ -283,48 +345,98 @@ much lower speed.
 | `expansionValve.main`      |   R    | Main electronic expansion-valve position | P    |
 | `expansionValve.auxiliary` |   R    | Auxiliary expansion-valve position       | P    |
 | `electrical.dcBusVoltage`  |   R    | DC bus voltage                           | V    |
-| `electrical.voltage`       |   R    | Mains voltage                            | V    |
-| `electrical.current`       |   R    | Total machine current                    | A    |
-| `electrical.power`         |   R    | Total electrical power                   | W    |
+| `electrical.voltage`       |   R    | Supply voltage                           | V    |
+| `electrical.current`       |   R    | Supply current                           | A    |
+| `electrical.power`         |   R    | Compressor operating power               | W    |
+| `electrical.totalPower`    |   R    | Total operating power                    | W    |
 
-### Output states
+## Output states
 
-These states report whether the controller is requesting or switching an output.
-They do not independently prove that the connected component is electrically
-energized or operating correctly.
+These states report controller output requests.
+
+They do not independently prove that the connected component is electrically energized or operating correctly.
 
 | State                       | Access | Description                                     |
 | --------------------------- | :----: | ----------------------------------------------- |
 | `output.compressor`         |   R    | Compressor output                               |
-| `output.fanMotor`           |   R    | Fan motor output                                |
-| `output.fourWayValve`       |   R    | Refrigerant four-way valve output               |
-| `output.chassisHeater`      |   R    | Chassis / base heater output                    |
-| `output.acElectricHeater`   |   R    | Additional space-heating electric heater output |
-| `output.threeWayValve`      |   R    | Hydraulic three-way valve output                |
-| `output.tankElectricHeater` |   R    | Domestic hot-water tank electric heater output  |
-| `output.circulationPump`    |   R    | External circulation-pump output                |
+| `output.fanMotor`           |   R    | Fan-motor output                                |
+| `output.fourWayValve`       |   R    | Refrigerant four-way-valve output               |
+| `output.chassisHeater`      |   R    | Chassis / base-heater output                    |
+| `output.acElectricHeater`   |   R    | Additional space-heating electric-heater output |
+| `output.threeWayValve`      |   R    | Hydraulic three-way-valve output                |
+| `output.tankElectricHeater` |   R    | Domestic hot-water tank electric-heater output  |
+| `output.circulationPump`    |   R    | Circulation-pump output                         |
 | `output.crankcaseHeater`    |   R    | Compressor crankcase-heater output              |
 
-### Status, faults and diagnostics
+## Faults and diagnostics
 
-| State                           | Access | Description                               |
-| ------------------------------- | :----: | ----------------------------------------- |
-| `status.defrosting`             |   R    | Defrost cycle active                      |
-| `fault.active`                  |   R    | At least one detected fault is active     |
-| `fault.codes`                   |   R    | Detected fault codes                      |
-| `fault.messages`                |   R    | Human-readable fault information          |
-| `diagnostics.rawWorkingStatus`  |   R    | Raw controller working-status word        |
-| `diagnostics.rawOutputFlags1`   |   R    | Raw output-flags word 1                   |
-| `diagnostics.rawOutputFlags2`   |   R    | Raw output-flags word 2                   |
-| `diagnostics.rawOutputFlags3`   |   R    | Raw output-flags word 3                   |
-| `diagnostics.rawFaultFlags`     |   R    | Raw fault flags                           |
-| `diagnostics.forceFallbackPoll` |   W    | Trigger one manual fallback polling cycle |
+The adapter passively evaluates the documented controller fault registers:
 
-### Adapter status
+- `0x0007` through `0x000D`
+- `0x001F`
+- `0x0020`
 
-| State             | Access | Description                        |
-| ----------------- | :----: | ---------------------------------- |
-| `info.connection` |   R    | Adapter transport connection state |
+Known documented fault bits are translated into fault codes and readable descriptions.
+
+Undocumented inverter fault values are deliberately kept as raw values instead of assigning speculative meanings.
+
+| State                              | Access | Description                                         |
+| ---------------------------------- | :----: | --------------------------------------------------- |
+| `status.defrosting`                |   R    | Defrost cycle active                                |
+| `fault.active`                     |   R    | At least one detected fault is active               |
+| `fault.codes`                      |   R    | Active documented fault codes / raw inverter faults |
+| `fault.messages`                   |   R    | Human-readable fault information                    |
+| `diagnostics.rawWorkingStatus`     |   R    | Raw controller working-status word                  |
+| `diagnostics.rawOutputFlags1`      |   R    | Raw output-flags word 1                             |
+| `diagnostics.rawOutputFlags2`      |   R    | Raw output-flags word 2                             |
+| `diagnostics.rawOutputFlags3`      |   R    | Raw output-flags word 3                             |
+| `diagnostics.rawFaultFlag1`        |   R    | Raw fault register `0x0007`                         |
+| `diagnostics.rawFaultFlag2`        |   R    | Raw fault register `0x0008`                         |
+| `diagnostics.rawFaultFlag3`        |   R    | Raw fault register `0x0009`                         |
+| `diagnostics.rawFaultFlag4`        |   R    | Raw fault register `0x000A`                         |
+| `diagnostics.rawFaultFlag5`        |   R    | Raw fault register `0x000B`                         |
+| `diagnostics.rawFaultFlag6`        |   R    | Raw fault register `0x000C`                         |
+| `diagnostics.rawFaultFlag7`        |   R    | Raw fault register `0x000D`                         |
+| `diagnostics.rawInverterFaultLow`  |   R    | Raw inverter fault register `0x001F`                |
+| `diagnostics.rawInverterFaultHigh` |   R    | Raw inverter fault register `0x0020`                |
+| `diagnostics.rawFaultFlags`        |   R    | Combined raw fault-register overview                |
+
+## Adapter status
+
+| State             | Access | Description                            |
+| ----------------- | :----: | -------------------------------------- |
+| `info.connection` |   R    | Valid Modbus traffic is being received |
+
+## Service registers
+
+The heat-pump controller exposes many additional service, protection, defrost, fan, expansion-valve and compressor parameters.
+
+Version 0.0.2 intentionally does **not** expose every documented service register as an ioBroker state.
+
+Only registers with a useful and sufficiently understood meaning are currently mapped.
+
+This keeps the adapter small and avoids exposing potentially unsafe or insufficiently documented service settings as normal writable ioBroker states.
+
+Additional registers can be added later when their behaviour and value ranges have been verified.
+
+## Not yet mapped
+
+The controller documentation contains additional functions and service
+parameters that are not exposed as ioBroker states in version 0.0.2.
+
+Examples include functions or values related to:
+
+- COP / EER
+- SG / Smart Grid
+- EVU / external utility control
+- additional compressor and fan parameters
+- additional protection and service parameters
+
+These functions are intentionally not mapped until their Modbus address,
+encoding, value range and behaviour have been sufficiently verified.
+
+The adapter deliberately avoids assigning speculative meanings to undocumented
+or insufficiently verified registers.
 
 ## Compatibility reports
 
@@ -336,17 +448,35 @@ If another heat pump uses the same controller or Modbus register layout, please 
 - which readings work
 - which writable functions were successfully tested
 
-This will allow additional device profiles and confirmed compatibility information to be added later.
+This will allow confirmed compatibility information to be added later.
 
 ## Changelog
 
+### 0.0.2
+
+- Added F02/F03 constant-temperature circulation pump control with intermittent, continuous and stop modes and configurable cycle.
+
+- Reworked adapter around passive Modbus RTU monitoring
+- Removed active polling and fallback polling
+- Simplified write handling
+- Writes wait for at least 200 ms of bus inactivity
+- Serialized write queue with newest-value replacement for queued states
+- Passive write confirmation using up to two subsequent observations
+- Maximum of three write attempts
+- Added writable vacation temperature setpoint
+- Added writable DC water-pump controls `0x015B`, `0x015C` and `0x015F` through `0x0165`
+- Corrected `pump.adjustmentCycle` range to 10–100 seconds
+- Added passive fault-register monitoring and fault states
+- Added raw fault diagnostics
+- Preserved unrelated bits for writable shared-bit registers
+- Added unsigned 16-bit validation for unrestricted numeric writes
+
 ### 0.0.1
 
-- Initial public development version
-- Modbus RTU monitoring via transparent TCP-to-RS485 gateway
+- Initial public version
+- Modbus RTU communication via transparent TCP-to-RS485 gateway
 - Experimental direct USB-to-RS485 support
-- Passive bus monitoring with conservative active fallback polling
-- Verified monitoring and writable functions for the tested SWD WP6 R290
+- Initial monitoring and control support for the tested SWD WP6 R290
 - RS485 connection and safety documentation
 
 ## License
