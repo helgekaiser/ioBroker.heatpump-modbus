@@ -14,9 +14,9 @@ The adapter was developed and tested on real hardware with:
 
 The register mapping and write behaviour are based on the available Modbus documentation and verified against the real bus traffic of the tested system.
 
-The current profile maps **56 Modbus register addresses**:
+The current profile maps **58 Modbus register addresses**:
 
-- 39 read-only register addresses
+- 41 read-only register addresses
 - 17 read/write register addresses
 
 Several registers contain multiple flags or logical states, so the number of ioBroker states is higher than the number of physical Modbus registers.
@@ -336,6 +336,28 @@ to `intermittent`.
 
 For example, the controller may report a target of 100 % while `pump.speed` reports a considerably lower actual speed.
 
+## Performance values
+
+The following performance values were verified on the tested **SWD WP6 R290**
+by correlation with real operating data:
+
+| State                  | Address  | Access | Conversion |
+| ---------------------- | :------: | :----: | ---------- |
+| `performance.capacity` | `0x0036` |   R    | raw × 2 W  |
+| `performance.cop`      | `0x0037` |   R    | raw ÷ 10   |
+
+`performance.capacity` represents the heating/cooling capacity reported by the
+controller.
+
+`performance.cop` represents the reported COP/EER.
+
+Several real operating points showed close agreement between the reported
+capacity, hydraulic heat output, electrical power and COP.
+
+> [!NOTE]
+> The mapping is verified on the tested SWD WP6 R290. Compatibility and scaling
+> should still be confirmed on other controller revisions or heat-pump models.
+
 ## Hydraulic, pressure and electrical values
 
 | State                      | Access | Description                              | Unit |
@@ -407,36 +429,19 @@ Undocumented inverter fault values are deliberately kept as raw values instead o
 | ----------------- | :----: | -------------------------------------- |
 | `info.connection` |   R    | Valid Modbus traffic is being received |
 
-## Service registers
+## Additional registers
 
-The heat-pump controller exposes many additional service, protection, defrost, fan, expansion-valve and compressor parameters.
+The controller exposes many additional service and protection parameters.
 
-Version 0.0.2 intentionally does **not** expose every documented service register as an ioBroker state.
+Only registers with a sufficiently understood and useful meaning are mapped.
+Potentially unsafe or insufficiently documented service settings are
+intentionally not exposed.
 
-Only registers with a useful and sufficiently understood meaning are currently mapped.
+Still to be verified include:
 
-This keeps the adapter small and avoids exposing potentially unsafe or insufficiently documented service settings as normal writable ioBroker states.
-
-Additional registers can be added later when their behaviour and value ranges have been verified.
-
-## Not yet mapped
-
-The controller documentation contains additional functions and service
-parameters that are not exposed as ioBroker states in version 0.0.2.
-
-Examples include functions or values related to:
-
-- COP / EER
-- SG / Smart Grid
+- SG / Smart Grid signal
 - EVU / external utility control
-- additional compressor and fan parameters
-- additional protection and service parameters
-
-These functions are intentionally not mapped until their Modbus address,
-encoding, value range and behaviour have been sufficiently verified.
-
-The adapter deliberately avoids assigning speculative meanings to undocumented
-or insufficiently verified registers.
+- additional service and protection parameters
 
 ## Compatibility reports
 
@@ -451,6 +456,13 @@ If another heat pump uses the same controller or Modbus register layout, please 
 This will allow confirmed compatibility information to be added later.
 
 ## Changelog
+
+### 0.0.3
+
+- Added passive heating/cooling capacity monitoring at `0x0036`
+- Added passive COP/EER monitoring at `0x0037`
+- Capacity and COP/EER mapping verified by correlation with real operating data on the tested SWD WP6 R290
+- Improved package test configuration for release checks
 
 ### 0.0.2
 

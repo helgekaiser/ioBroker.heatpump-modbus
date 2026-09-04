@@ -1,8 +1,21 @@
 {
 	"common": {
 		"name": "heatpump-modbus",
-		"version": "0.0.2",
+		"version": "0.0.3",
 		"news": {
+			"0.0.3": {
+				"en": "Added passive heating/cooling capacity and COP/EER monitoring",
+				"de": "Passives Monitoring von Heiz-/Kühlleistung und COP/EER hinzugefügt",
+				"ru": "Добавлен пассивный мониторинг мощности нагрева/охлаждения и COP/EER",
+				"pt": "Adicionado monitoramento passivo da capacidade de aquecimento/arrefecimento e COP/EER",
+				"nl": "Passieve monitoring van verwarmings-/koelvermogen en COP/EER toegevoegd",
+				"fr": "Ajout de la surveillance passive de la puissance chauffage/refroidissement et du COP/EER",
+				"it": "Aggiunto il monitoraggio passivo della capacità di riscaldamento/raffreddamento e COP/EER",
+				"es": "Añadida monitorización pasiva de la capacidad de calefacción/refrigeración y COP/EER",
+				"pl": "Dodano pasywne monitorowanie mocy grzewczej/chłodniczej oraz COP/EER",
+				"uk": "Додано пасивний моніторинг потужності нагрівання/охолодження та COP/EER",
+				"zh-cn": "新增被动加热/制冷能力和 COP/EER 监控"
+			},
 			"0.0.2": {
 				"en": "Passive Modbus monitoring, simplified write handling, pump controls and fault states",
 				"de": "Passives Modbus-Monitoring, vereinfachte Schreiblogik, Pumpensteuerung und Fehlerzustände",

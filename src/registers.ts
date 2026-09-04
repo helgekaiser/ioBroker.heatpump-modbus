@@ -576,6 +576,25 @@ export const registers: readonly RegisterDefinition[] = [
 		role: 'value.power',
 		unit: 'W',
 	},
+	{
+		id: 'performance.capacity',
+		address: 0x0036,
+		access: 'r',
+		name: 'Heating / cooling capacity reported by controller',
+		type: 'number',
+		role: 'value.power',
+		unit: 'W',
+		decode: (raw: number): StateValue => raw * 2,
+	},
+	{
+		id: 'performance.cop',
+		address: 0x0037,
+		access: 'r',
+		name: 'COP / EER reported by controller',
+		type: 'number',
+		role: 'value',
+		decode: (raw: number): StateValue => raw / 10,
+	},
 
 	{
 		id: 'electrical.power',

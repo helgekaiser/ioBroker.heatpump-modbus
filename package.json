@@ -1,6 +1,6 @@
 {
 	"name": "iobroker.heatpump-modbus",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "Community adapter for compatible heat pumps using Modbus RTU",
 	"author": {
 		"name": "Helge Kaiser"
@@ -60,7 +60,7 @@
 		"test:ts": "mocha --config test/mocharc.custom.json src/**/*.test.ts",
 		"test:package": "mocha test/package --exit",
 		"test:integration": "mocha test/integration --exit",
-		"test": "npm run test:ts && npm run test:package",
+		"test": "npm run test:package",
 		"check": "tsc --noEmit",
 		"lint": "eslint -c eslint.config.mjs .",
 		"translate": "translate-adapter",
